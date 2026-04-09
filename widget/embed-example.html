@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChatBot Widget Embed Example</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; background: #f8f9fa; color: #333; }
+    .container { max-width: 800px; margin: 60px auto; padding: 0 24px; }
+    h1 { font-size: 2rem; color: #111; }
+    p { color: #555; line-height: 1.7; }
+    code { background: #e8e8e8; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+    pre { background: #1e1e1e; color: #ddd; padding: 20px; border-radius: 8px; overflow: auto; }
+    .badge { display: inline-block; background: #0066cc; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 13px; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ChatBot Widget Example</h1>
+    <p>
+      This page demonstrates the embedded AI chatbot widget.
+      Look for the <strong>chat button in the bottom-right corner</strong>.
+    </p>
+
+    <h2>One-Line Integration</h2>
+    <p>To add this chatbot to any website, paste this single line before <code>&lt;/body&gt;</code>:</p>
+    <pre>&lt;script
+  src="http://localhost:3000/widget/chatbot-widget.js"
+  data-chatbot-id="10b4b121-57c3-4f17-a2f1-73c21e8bf321"
+  async
+&gt;&lt;/script&gt;</pre>
+
+    <h2>How to Get Your Chatbot ID</h2>
+    <p>Create a chatbot via the API:</p>
+    <pre>curl -X POST http://localhost:3000/create-chatbot \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Company Bot",
+    "baseUrl": "https://yourcompany.com",
+    "crawlOptions": { "maxPages": 50, "maxDepth": 2 },
+    "config": {
+      "primaryColor": "#0066cc",
+      "welcomeMessage": "Hi! How can I help you today?"
+    }
+  }'</pre>
+
+    <p>The response includes a <code>chatbotId</code> — use that in the embed script above.</p>
+
+    <h2>Check Indexing Status</h2>
+    <pre>curl http://localhost:3000/chatbot/YOUR_CHATBOT_ID/status</pre>
+
+    <p>Wait until <code>"status": "ready"</code> before embedding the widget.</p>
+  </div>
+
+  <!--
+    =========================================================
+    PASTE YOUR EMBED SCRIPT HERE:
+    Replace 10b4b121-57c3-4f17-a2f1-73c21e8bf321 with your actual chatbot ID
+    =========================================================
+  -->
+  <script
+    src="http://localhost:3000/widget/chatbot-widget.js"
+    data-chatbot-id="10b4b121-57c3-4f17-a2f1-73c21e8bf321"
+    async
+  ></script>
+</body>
+</html>
