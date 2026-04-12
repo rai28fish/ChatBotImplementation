@@ -27,6 +27,8 @@
   let isOpen = false;
   let isTyping = false;
   let teaserDismissed = false;
+  let chatEnded = false;
+  let menuOpen = false;
   let elements = {};
 
   // ─── Config Fetch ───────────────────────────────────────────────────────────
@@ -146,6 +148,7 @@
         align-items: center;
         gap: 10px;
         flex-shrink: 0;
+        position: relative;
       }
       #chatbot-avatar {
         width: 36px;
@@ -162,7 +165,7 @@
       #chatbot-title { font-weight: 600; font-size: 15px; }
       #chatbot-subtitle { font-size: 11px; opacity: 0.8; margin-top: 1px; }
       #chatbot-header-text { flex: 1; min-width: 0; }
-      #chatbot-close {
+      #chatbot-menu-btn, #chatbot-close {
         background: none;
         border: none;
         color: #fff;
@@ -178,7 +181,37 @@
         align-self: flex-start;
         margin-top: -2px;
       }
-      #chatbot-close:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+      #chatbot-menu-btn:hover, #chatbot-close:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+      #chatbot-menu-dropdown {
+        position: absolute;
+        top: 54px;
+        right: 48px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+        z-index: 10;
+        min-width: 190px;
+        overflow: hidden;
+        animation: cb-fade-in 0.15s ease;
+      }
+      .cb-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+        color: #1a1a1a;
+        font-family: inherit;
+        transition: background 0.12s;
+      }
+      .cb-menu-item:hover { background: #f5f5f5; }
+      .cb-menu-item.danger { color: #cc0000; }
+      .cb-menu-sep { height: 1px; background: #eee; margin: 0; }
       #chatbot-messages {
         flex: 1;
         overflow-y: auto;
@@ -291,9 +324,10 @@
         outline: none;
         resize: none;
         max-height: 80px;
-        overflow-y: auto;
+        overflow-y: hidden;
         transition: border-color 0.15s;
         line-height: 1.4;
+        box-sizing: border-box;
       }
       #chatbot-input:focus { border-color: ${primaryColor}; }
       #chatbot-input::placeholder { color: #aaa; }
@@ -320,6 +354,12 @@
         color: #bbb;
         padding: 4px 0 6px;
       }
+      .cb-msg.bot p { margin: 0 0 6px; }
+      .cb-msg.bot p:last-child { margin-bottom: 0; }
+      .cb-msg.bot ul, .cb-msg.bot ol { margin: 4px 0 6px; padding-left: 18px; }
+      .cb-msg.bot li { margin-bottom: 3px; line-height: 1.5; }
+      .cb-msg.bot strong { font-weight: 600; }
+      #chatbot-launcher img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; pointer-events: none; }
       @media (max-width: 480px) {
         #chatbot-window {
           bottom: 0; right: 0; left: 0;
@@ -363,10 +403,9 @@
     const launcher = document.createElement('button');
     launcher.id = 'chatbot-launcher';
     launcher.setAttribute('aria-label', `Open ${name} chat`);
-    launcher.innerHTML = `
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>`;
+    launcher.innerHTML = profileImage
+      ? `<img src="${profileImage}" alt="${name}" />`
+      : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
     launcher.addEventListener('click', () => {
       dismissTeaser();
       toggleWidget();
@@ -389,6 +428,22 @@
           <div id="chatbot-title">${escapeHtml(name)}</div>
           <div id="chatbot-subtitle">Online · Typically replies instantly</div>
         </div>
+        <button id="chatbot-menu-btn" aria-label="Chat options">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+          </svg>
+        </button>
+        <div id="chatbot-menu-dropdown" hidden>
+          <button class="cb-menu-item" id="chatbot-menu-new">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+            Start a new chat
+          </button>
+          <div class="cb-menu-sep"></div>
+          <button class="cb-menu-item danger" id="chatbot-menu-end">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            End chat
+          </button>
+        </div>
         <button id="chatbot-close" aria-label="Close chat">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -405,7 +460,7 @@
           </svg>
         </button>
       </div>
-      <div id="chatbot-powered">Rai's Chatbots</div>
+      <div id="chatbot-powered">Powered by RaiBot</div>
     `;
 
     document.body.appendChild(launcher);
@@ -420,6 +475,10 @@
       input: win.querySelector('#chatbot-input'),
       send: win.querySelector('#chatbot-send'),
       close: win.querySelector('#chatbot-close'),
+      menuBtn: win.querySelector('#chatbot-menu-btn'),
+      menuDropdown: win.querySelector('#chatbot-menu-dropdown'),
+      menuNew: win.querySelector('#chatbot-menu-new'),
+      menuEnd: win.querySelector('#chatbot-menu-end'),
     };
 
     // Event listeners
@@ -432,6 +491,25 @@
       }
     });
     elements.input.addEventListener('input', autoResize);
+
+    // Menu button
+    elements.menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menuOpen = !menuOpen;
+      elements.menuDropdown.hidden = !menuOpen;
+    });
+    elements.menuNew.addEventListener('click', () => {
+      closeMenu();
+      startNewChat();
+    });
+    elements.menuEnd.addEventListener('click', () => {
+      closeMenu();
+      endChat();
+    });
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      if (menuOpen) closeMenu();
+    });
 
     // Welcome message
     appendMessage('bot', welcomeMessage);
@@ -471,9 +549,13 @@
   function toggleWidget() {
     isOpen = !isOpen;
     elements.win.classList.toggle('open', isOpen);
+    const profileImage = botConfig && botConfig.profileImage;
+    const botName = botConfig && botConfig.name || '';
     elements.launcher.innerHTML = isOpen
       ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
-      : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+      : profileImage
+        ? `<img src="${profileImage}" alt="${botName}" />`
+        : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
 
     if (isOpen) {
       setTimeout(() => elements.input.focus(), 200);
@@ -547,6 +629,21 @@
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
+        if (err.error === 'session_limit') {
+          hideTyping();
+          appendMessage('bot', err.message || "You\u2019ve reached the message limit for this chat. Start a new chat to continue.");
+          chatEnded = true;
+          setInputEnabled(false);
+          elements.input.placeholder = 'This chat has ended.';
+          return;
+        }
+        if (err.error === 'daily_limit') {
+          hideTyping();
+          appendMessage('bot', err.message || "You\u2019ve reached your daily chat limit. Please try again tomorrow.");
+          setInputEnabled(false);
+          elements.input.placeholder = 'Daily limit reached.';
+          return;
+        }
         throw new Error(err.error || `HTTP ${response.status}`);
       }
 
@@ -576,7 +673,7 @@
               const payload = JSON.parse(raw);
               if (payload.content) {
                 fullText += payload.content;
-                botMsg.textContent = fullText;
+                botMsg.innerHTML = renderMarkdown(fullText);
                 scrollToBottom();
               }
               if (payload.sessionId && !sessionId) {
@@ -588,7 +685,7 @@
       }
 
       if (!fullText) {
-        botMsg.textContent = "I'm sorry, I couldn't generate a response.";
+        botMsg.innerHTML = renderMarkdown("I'm sorry, I couldn't generate a response.");
       }
     } catch (err) {
       hideTyping();
@@ -599,12 +696,40 @@
     }
   }
 
+  // ─── Menu / Chat lifecycle ─────────────────────────────────────────────────
+
+  function closeMenu() {
+    menuOpen = false;
+    if (elements.menuDropdown) elements.menuDropdown.hidden = true;
+  }
+
+  function endChat() {
+    if (chatEnded) return;
+    chatEnded = true;
+    setInputEnabled(false);
+    elements.input.placeholder = 'This chat has ended.';
+    appendMessage('bot', 'This chat has been ended. Click \u201cStart a new chat\u201d from the menu to begin a new conversation.');
+  }
+
+  function startNewChat() {
+    sessionId = null;
+    chatEnded = false;
+    elements.messages.innerHTML = '';
+    elements.input.placeholder = botConfig.placeholderText || 'Type a message...';
+    setInputEnabled(true);
+    appendMessage('bot', botConfig.welcomeMessage || 'Hi! How can I help you?');
+    buildStarters();
+    elements.messages.parentNode.insertBefore(elements.starters, elements.messages.nextSibling);
+  }
+
   // ─── Utilities ─────────────────────────────────────────────────────────────
 
   function autoResize() {
     const input = elements.input;
     input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 80) + 'px';
+    const newHeight = Math.min(input.scrollHeight, 80);
+    input.style.height = newHeight + 'px';
+    input.style.overflowY = input.scrollHeight > 80 ? 'auto' : 'hidden';
   }
 
   function escapeHtml(text) {
@@ -613,6 +738,45 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  function renderMarkdown(text) {
+    // Escape HTML first
+    let safe = String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Bold: **text**
+    safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Remove any leftover stray asterisks used for emphasis (*, ***)
+    safe = safe.replace(/\*{1,3}([^*\n]+?)\*{1,3}/g, '$1');
+
+    const lines = safe.split('\n');
+    const out = [];
+    let inUl = false;
+    let inOl = false;
+
+    for (const line of lines) {
+      const t = line.trim();
+      if (/^[-•]\s+/.test(t)) {
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        if (!inUl) { out.push('<ul>'); inUl = true; }
+        out.push(`<li>${t.replace(/^[-•]\s+/, '')}</li>`);
+      } else if (/^\d+\.\s+/.test(t)) {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (!inOl) { out.push('<ol>'); inOl = true; }
+        out.push(`<li>${t.replace(/^\d+\.\s+/, '')}</li>`);
+      } else {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (inOl) { out.push('</ol>'); inOl = false; }
+        if (t !== '') out.push(`<p>${t}</p>`);
+      }
+    }
+    if (inUl) out.push('</ul>');
+    if (inOl) out.push('</ol>');
+
+    return out.join('');
   }
 
   // ─── Init ──────────────────────────────────────────────────────────────────

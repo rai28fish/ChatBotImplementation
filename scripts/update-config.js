@@ -15,6 +15,7 @@ const data = JSON.stringify({
   chatbotId,
   config: {
     name: 'CybatarBot',
+    primaryColor: '#6fb8e5',
     welcomeMessage: 'Hi! How can I help you?',
     teaserMessage: 'Hey! How can I help you?',
     profileImage: 'https://cybatarriovic.com/wp-content/uploads/2025/08/cropped-favicon-2.png',

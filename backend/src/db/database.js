@@ -145,6 +145,7 @@ const sessionOps = {
     store.sessions[session.id] = {
       id: session.id,
       tenant_id: session.tenantId,
+      ip: session.ip || null,
       created_at: new Date().toISOString(),
     };
     store.messages[session.id] = [];
@@ -173,6 +174,17 @@ const sessionOps = {
   getMessages(sessionId, limit = 10) {
     const msgs = store.messages[sessionId] || [];
     return msgs.slice(-limit);
+  },
+
+  getUserMessageCount(sessionId) {
+    return (store.messages[sessionId] || []).filter((m) => m.role === 'user').length;
+  },
+
+  countTodayByIp(tenantId, ip) {
+    const today = new Date().toISOString().slice(0, 10);
+    return Object.values(store.sessions).filter(
+      (s) => s.tenant_id === tenantId && s.ip === ip && s.created_at.slice(0, 10) === today,
+    ).length;
   },
 };
 

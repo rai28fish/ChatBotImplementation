@@ -6,6 +6,9 @@ const logger = require('../../utils/logger');
 
 const router = express.Router();
 
+const MAX_MESSAGES_PER_SESSION = 10;
+const MAX_SESSIONS_PER_DAY = 2;
+
 /**
  * POST /chat
  *
@@ -33,6 +36,9 @@ router.post('/chat', async (req, res) => {
     });
   }
 
+  // Get client IP
+  const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || 'unknown';
+
   // Resolve or create session
   let sessionId = incomingSessionId;
   let history = [];
@@ -50,8 +56,25 @@ router.post('/chat', async (req, res) => {
   }
 
   if (!sessionId) {
+    // Check daily chat limit
+    const todayCount = sessionOps.countTodayByIp(chatbotId, clientIp);
+    if (todayCount >= MAX_SESSIONS_PER_DAY) {
+      return res.status(429).json({
+        error: 'daily_limit',
+        message: "You've reached your daily limit of 2 chats. Please try again tomorrow.",
+      });
+    }
     sessionId = uuidv4();
-    sessionOps.create({ id: sessionId, tenantId: chatbotId });
+    sessionOps.create({ id: sessionId, tenantId: chatbotId, ip: clientIp });
+  }
+
+  // Check per-session message limit
+  const userMsgCount = sessionOps.getUserMessageCount(sessionId);
+  if (userMsgCount >= MAX_MESSAGES_PER_SESSION) {
+    return res.status(429).json({
+      error: 'session_limit',
+      message: "You've reached the 10-message limit for this chat. Start a new chat to continue.",
+    });
   }
 
   // Save user message
