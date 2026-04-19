@@ -5,19 +5,39 @@ const NOISE_SELECTORS = [
   'script', 'style', 'noscript', 'iframe',
   'nav', 'header', 'footer',
   '.nav', '.header', '.footer', '.navbar', '.sidebar',
-  '.cookie-banner', '.cookie-notice', '.gdpr',
-  '.popup', '.modal', '.overlay',
+  // WordPress / common CMS navigation
+  '#masthead', '#site-header', '#site-footer', '#colophon',
+  '.site-header', '.site-footer', '.site-navigation',
+  '.main-navigation', '.primary-navigation', '.secondary-navigation',
+  '.menu', '.menu-container', '#menu', '.nav-menu',
+  '.wp-block-navigation', '.wp-block-navigation__container',
+  '.navigation', '.nav-bar', '.top-bar', '.bottom-bar',
+  // Sidebars & widgets
+  '.sidebar', '#sidebar', 'aside', '.widget', '.widget-area',
+  // Breadcrumbs, pagination, social share
+  '.breadcrumb', '.breadcrumbs', '.pagination', '.page-numbers',
+  '.social-share', '.share-buttons', '.post-navigation',
+  // Cookie / GDPR / overlays
+  '.cookie-banner', '.cookie-notice', '.gdpr', '.consent',
+  '.popup', '.modal', '.overlay', '.banner',
   '[role="navigation"]', '[role="banner"]', '[role="contentinfo"]',
-  '.advertisement', '.ad', '#ad',
+  '[role="complementary"]',
+  '.advertisement', '.ad', '.ads', '#ad', '#ads',
   'form[action*="search"]',
 ];
 
-// Preferred content containers (tried in order)
+// Preferred content containers (tried in order, most specific first)
 const CONTENT_SELECTORS = [
   'main', 'article', '[role="main"]',
+  // WordPress specific
+  '.entry-content', '.post-content', '.page-content', '.wp-block-post-content',
+  '#primary .hentry', '.hentry',
+  // Generic CMS
   '.content', '#content', '.main-content', '#main-content',
-  '.post-content', '.entry-content', '.page-content',
-  '.container', '#container',
+  '.article-content', '.article-body', '.post-body',
+  '.page-body', '#page-content',
+  '.container main', '.container article',
+  '.container', '#container', '#wrapper',
 ];
 
 const MIN_CONTENT_WORDS = 30;
@@ -56,7 +76,7 @@ function extractContent(html, url) {
 
   // Extract and normalize text
   const rawText = contentEl.text();
-  const content = normalizeWhitespace(rawText);
+  const content = stripLeadingNavBoilerplate(normalizeWhitespace(rawText));
   const wordCount = content.split(/\s+/).filter(Boolean).length;
   const isUseful = wordCount >= MIN_CONTENT_WORDS;
 
@@ -107,6 +127,25 @@ function normalizeUrl(urlObj) {
     u.pathname = u.pathname.slice(0, -1);
   }
   return u.toString();
+}
+
+/**
+ * Remove leading lines that look like nav menu items (very short, no punctuation).
+ * Stops as soon as it hits a line that looks like real content.
+ */
+function stripLeadingNavBoilerplate(text) {
+  const lines = text.split('\n');
+  let start = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const words = line.split(/\s+/).filter(Boolean);
+    // Nav lines: ≤5 words, no sentence-ending punctuation, no digits
+    const looksLikeNav = words.length <= 5 && !/[.!?,:;]/.test(line) && !/\d/.test(line);
+    if (!looksLikeNav) { start = i; break; }
+    start = i + 1;
+  }
+  return lines.slice(start).join('\n').trim();
 }
 
 function normalizeWhitespace(text) {

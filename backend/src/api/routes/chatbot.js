@@ -2,7 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const { crawl } = require('../../crawler/crawler');
-const { chunkPages } = require('../../embeddings/chunker');
+const { chunkPages, chunkText } = require('../../embeddings/chunker');
 const { embedTexts } = require('../../embeddings/embedder');
 const vectorStore = require('../../embeddings/vectorStore');
 const { tenantOps, pageOps } = require('../../db/database');
@@ -217,7 +217,12 @@ router.get('/chatbot/:id/status', (req, res) => {
 
   res.json({
     chatbotId: tenant.id,
-    name: tenant.name,
+    name: tenant.config.name || tenant.name,
+    companyName: tenant.config.companyName || null,
+    companySummary: tenant.config.companySummary || '',
+    systemInstructions: tenant.config.systemInstructions || '',
+    profileImage: tenant.config.profileImage || '',
+    baseUrl: tenant.base_url,
     status: tenant.status,
     pagesIndexed: tenant.pages_indexed,
     chunksIndexed: tenant.chunks_indexed,
@@ -249,12 +254,75 @@ router.get('/chatbots', (req, res) => {
   const tenants = tenantOps.findAll();
   res.json(tenants.map((t) => ({
     chatbotId: t.id,
-    name: t.name,
+    name: t.config.name || t.name,
+    companyName: t.config.companyName || null,
+    companySummary: t.config.companySummary || '',
+    systemInstructions: t.config.systemInstructions || '',
     baseUrl: t.base_url,
     status: t.status,
     pagesIndexed: t.pages_indexed,
+    chunksIndexed: t.chunks_indexed,
+    profileImage: t.config.profileImage || '',
     createdAt: t.created_at,
   })));
+});
+
+// GET /chatbot/:id/chunks  (knowledge base viewer — no embeddings)
+router.get('/chatbot/:id/chunks', (req, res) => {
+  const tenant = tenantOps.findById(req.params.id);
+  if (!tenant) return res.status(404).json({ error: 'Chatbot not found' });
+
+  const data = vectorStore.getAll(req.params.id);
+  const chunks = data.map((v) => ({
+    id: v.id,
+    text: v.text,
+    source: v.metadata?.source || 'crawled',
+    url: v.metadata?.url || null,
+    title: v.metadata?.title || null,
+    chunkIndex: v.metadata?.chunkIndex ?? null,
+  }));
+
+  res.json({ chatbotId: req.params.id, name: tenant.config.name || tenant.name, total: chunks.length, chunks });
+});
+
+// POST /chatbot/:id/ingest-text
+// Body: { text: string, title?: string }
+router.post('/chatbot/:id/ingest-text', async (req, res) => {
+  const tenant = tenantOps.findById(req.params.id);
+  if (!tenant) return res.status(404).json({ error: 'Chatbot not found' });
+
+  const { text, title = 'Custom Content' } = req.body;
+  if (!text || typeof text !== 'string' || text.trim().length < 10) {
+    return res.status(400).json({ error: 'text must be a non-empty string' });
+  }
+
+  const source = `custom://${req.params.id}/${Date.now()}`;
+
+  try {
+    const chunks = chunkText(text.trim(), source, title);
+    if (chunks.length === 0) {
+      return res.status(400).json({ error: 'Text was too short to produce any chunks' });
+    }
+
+    const embeddings = await embedTexts(chunks.map((c) => c.text));
+    const vectors = chunks.map((chunk, i) => ({
+      id: uuidv4(),
+      text: chunk.text,
+      embedding: embeddings[i],
+      metadata: { ...chunk.metadata, source: 'custom' },
+    }));
+
+    vectorStore.upsert(tenant.id, vectors);
+
+    const total = vectorStore.count(tenant.id);
+    tenantOps.updateStatus(tenant.id, tenant.status, { chunksIndexed: total });
+
+    logger.info(`[${tenant.id}] Ingested ${chunks.length} custom chunks ("${title}")`);
+    res.json({ chunksAdded: chunks.length, totalChunks: total });
+  } catch (err) {
+    logger.error(`[${tenant.id}] ingest-text failed: ${err.message}`);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

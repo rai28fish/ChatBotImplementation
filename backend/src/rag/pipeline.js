@@ -12,19 +12,29 @@ function getClient() {
   return openaiClient;
 }
 
-const TOP_K = 5;
-const MAX_CONTEXT_CHARS = 3000;
+const TOP_K = 10;
+const MAX_CONTEXT_CHARS = 6000;
 
 /**
  * Build the system prompt for a tenant's chatbot.
+ * Uses tenantConfig.systemInstructions if provided; otherwise falls back to the default template.
  */
 function buildSystemPrompt(tenantConfig, contextChunks) {
-  const botName = tenantConfig.name || 'Assistant';
-  const company = tenantConfig.companyName || tenantConfig.name || 'the company';
-
   const context = contextChunks
     .map((c, i) => `[Source ${i + 1}] ${c.text.slice(0, MAX_CONTEXT_CHARS / TOP_K)}`)
     .join('\n\n');
+
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const contextBlock = `CONTEXT FROM WEBSITE:\n${context}\n\n---\nToday's date: ${today}`;
+
+  // Per-chatbot custom instructions (set via config.systemInstructions)
+  if (tenantConfig.systemInstructions) {
+    return `${tenantConfig.systemInstructions}\n\n${contextBlock}`;
+  }
+
+  // Default instructions (Cybatar Riovic)
+  const botName = tenantConfig.name || 'Assistant';
+  const company = tenantConfig.companyName || tenantConfig.name || 'the company';
 
   return `You are ${botName}, a friendly and concise AI assistant for ${company}.
 
@@ -47,11 +57,7 @@ CONTENT RULES:
 - Only add a follow-up question when it genuinely helps the user go deeper — not after every response. Most responses should end without one.
 - Tone: warm, professional, and to the point.
 
-CONTEXT FROM WEBSITE:
-${context}
-
----
-Today's date: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+${contextBlock}
 `;
 }
 

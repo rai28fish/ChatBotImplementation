@@ -128,6 +128,13 @@ class VectorStore {
   }
 
   /**
+   * Return all vectors for a tenant (with embeddings).
+   */
+  getAll(tenantId) {
+    return this._load(tenantId).vectors;
+  }
+
+  /**
    * Delete all vectors for a tenant.
    */
   clear(tenantId) {

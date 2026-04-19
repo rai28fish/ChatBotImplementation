@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Knowledge Base</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .back-btn {
+      color: #8899aa;
+      text-decoration: none;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .15s;
+      white-space: nowrap;
+    }
+    .back-btn:hover { color: #fff; }
+    .header-divider { color: #334; font-size: 1.2rem; }
+    header h1 { font-size: 1.1rem; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+    .chunk-count {
+      font-size: .8rem;
+      color: #8899aa;
+      white-space: nowrap;
+    }
+
+    /* ── Search bar ── */
+    .search-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .search-input {
+      background: #2d2d50;
+      border: none;
+      border-radius: 7px;
+      color: #fff;
+      font-size: .83rem;
+      padding: 7px 12px 7px 32px;
+      width: 220px;
+      outline: none;
+      transition: background .15s, width .2s;
+    }
+    .search-input::placeholder { color: #667; }
+    .search-input:focus { background: #3d4a6e; width: 280px; }
+    .search-icon {
+      position: absolute;
+      left: 10px; top: 50%;
+      transform: translateY(-50%);
+      color: #667;
+      font-size: .85rem;
+      pointer-events: none;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 24px 60px;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    .filter-label { font-size: .75rem; color: #99a; margin-right: 4px; }
+    .filter-btn {
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1.5px solid #dde;
+      background: #fff;
+      font-size: .75rem;
+      font-weight: 600;
+      color: #556;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .filter-btn:hover { border-color: #1a1a2e; color: #1a1a2e; }
+    .filter-btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      font-size: .78rem;
+      color: #99a;
+      margin-bottom: 16px;
+    }
+    .stats-bar strong { color: #445; }
+
+    /* ── Chunk cards ── */
+    .chunks { display: flex; flex-direction: column; gap: 14px; }
+
+    .chunk-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.05);
+      overflow: hidden;
+      transition: box-shadow .15s;
+    }
+    .chunk-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.1), 0 4px 18px rgba(0,0,0,.08); }
+    .chunk-card.hidden { display: none; }
+
+    .chunk-head {
+      padding: 12px 18px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .chunk-index {
+      font-size: .68rem;
+      font-weight: 700;
+      color: #99a;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      flex-shrink: 0;
+    }
+    .chunk-title {
+      font-size: .82rem;
+      font-weight: 600;
+      color: #334;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .source-badge {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .source-crawled { background: #e8f0fe; color: #1a5fb4; }
+    .source-custom  { background: #fce8ff; color: #7a1fa2; }
+
+    .chunk-url {
+      display: block;
+      font-size: .72rem;
+      color: #6fb8e5;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      flex-basis: 100%;
+    }
+    .chunk-url:hover { text-decoration: underline; }
+
+    .chunk-body {
+      padding: 14px 18px;
+      font-size: .85rem;
+      line-height: 1.7;
+      color: #334;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    mark {
+      background: #fff3cd;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: #99a;
+      font-size: .95rem;
+    }
+
+    /* ── Loading ── */
+    .loading-state {
+      text-align: center;
+      padding: 80px 24px;
+      color: #99a;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #e0e3ee;
+      border-top-color: #1a1a2e;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="back-btn" id="back-link" href="/dashboard">← Configure</a>
+  <span class="header-divider">/</span>
+  <h1 id="header-title">Knowledge Base</h1>
+  <div class="header-meta">
+    <span class="chunk-count" id="chunk-count"></span>
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input class="search-input" id="search" type="text" placeholder="Search chunks…" oninput="applyFilters()" />
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="filter-bar" class="filter-bar" style="display:none">
+    <span class="filter-label">Source:</span>
+  </div>
+  <div class="stats-bar" id="stats-bar" style="display:none"></div>
+  <div id="chunks-container">
+    <div class="loading-state"><div class="spinner"></div>Loading knowledge base…</div>
+  </div>
+</main>
+
+<script>
+  const BASE = 'http://localhost:3000';
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  let allChunks = [];
+  let activeSource = null; // null = all
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function highlight(text, query) {
+    if (!query) return escapeHtml(text);
+    const escaped = escapeHtml(text);
+    const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return escaped.replace(new RegExp(safeQ, 'gi'), m => `<mark>${m}</mark>`);
+  }
+
+  function renderChunk(chunk, index, query) {
+    const sourceClass = chunk.source === 'custom' ? 'source-custom' : 'source-crawled';
+    const sourceLabel = chunk.source === 'custom' ? 'Custom' : 'Crawled';
+    const title = chunk.title || 'Untitled';
+
+    return `
+      <div class="chunk-card" data-source="${escapeHtml(chunk.url || 'custom')}" data-index="${index}">
+        <div class="chunk-head">
+          <span class="chunk-index">#${index + 1}</span>
+          <span class="chunk-title">${escapeHtml(title)}</span>
+          <span class="source-badge ${sourceClass}">${sourceLabel}</span>
+          ${chunk.url ? `<a class="chunk-url" href="${escapeHtml(chunk.url)}" target="_blank">${escapeHtml(chunk.url)}</a>` : ''}
+        </div>
+        <div class="chunk-body">${highlight(chunk.text, query)}</div>
+      </div>
+    `;
+  }
+
+  function applyFilters() {
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    const cards = document.querySelectorAll('.chunk-card');
+    let visible = 0;
+
+    cards.forEach((card, i) => {
+      const chunk = allChunks[parseInt(card.dataset.index)];
+      const matchesSource = !activeSource || card.dataset.source === activeSource;
+      const matchesSearch = !query ||
+        chunk.text.toLowerCase().includes(query) ||
+        (chunk.title || '').toLowerCase().includes(query) ||
+        (chunk.url || '').toLowerCase().includes(query);
+
+      if (matchesSource && matchesSearch) {
+        card.classList.remove('hidden');
+        // Re-render with highlight
+        card.querySelector('.chunk-body').innerHTML = highlight(chunk.text, query);
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    const statsBar = document.getElementById('stats-bar');
+    statsBar.style.display = '';
+    statsBar.innerHTML = `Showing <strong>${visible}</strong> of <strong>${allChunks.length}</strong> chunks${query ? ` matching "<strong>${escapeHtml(query)}</strong>"` : ''}`;
+
+    const empty = document.getElementById('empty-state');
+    if (empty) empty.style.display = visible === 0 ? '' : 'none';
+  }
+
+  function buildFilterBar(chunks) {
+    const urlGroups = {};
+    chunks.forEach(c => {
+      const key = c.url || 'custom';
+      urlGroups[key] = (urlGroups[key] || 0) + 1;
+    });
+
+    const bar = document.getElementById('filter-bar');
+    bar.style.display = '';
+
+    // All button
+    const allBtn = document.createElement('button');
+    allBtn.className = 'filter-btn active';
+    allBtn.textContent = `All (${chunks.length})`;
+    allBtn.onclick = () => {
+      activeSource = null;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      allBtn.classList.add('active');
+      applyFilters();
+    };
+    bar.appendChild(allBtn);
+
+    Object.entries(urlGroups).forEach(([url, count]) => {
+      const label = url === 'custom' ? `Custom (${count})` : `${url.replace(/^https?:\/\/[^/]+/, '') || '/'} (${count})`;
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.textContent = label;
+      btn.title = url;
+      btn.onclick = () => {
+        activeSource = url;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyFilters();
+      };
+      bar.appendChild(btn);
+    });
+  }
+
+  async function load() {
+    if (!id) {
+      document.getElementById('chunks-container').innerHTML = '<div class="empty-state">No chatbot ID in URL.</div>';
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE}/chatbot/${id}/chunks`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load');
+
+      allChunks = data.chunks;
+      document.title = `${data.name} — Knowledge Base`;
+      document.getElementById('header-title').textContent = `${data.name} — Knowledge Base`;
+      document.getElementById('back-link').href = `/dashboard/chatbot.html?id=${id}`;
+      document.getElementById('chunk-count').textContent = `${data.total} chunks`;
+
+      if (allChunks.length === 0) {
+        document.getElementById('chunks-container').innerHTML = '<div class="empty-state">No chunks found. The knowledge base may still be indexing.</div>';
+        return;
+      }
+
+      buildFilterBar(allChunks);
+
+      const statsBar = document.getElementById('stats-bar');
+      statsBar.style.display = '';
+      statsBar.innerHTML = `Showing <strong>${allChunks.length}</strong> chunks`;
+
+      document.getElementById('chunks-container').innerHTML =
+        allChunks.map((c, i) => renderChunk(c, i, '')).join('') +
+        `<div id="empty-state" class="empty-state" style="display:none">No chunks match your search.</div>`;
+
+    } catch (err) {
+      document.getElementById('chunks-container').innerHTML = `<div class="empty-state">${err.message}</div>`;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

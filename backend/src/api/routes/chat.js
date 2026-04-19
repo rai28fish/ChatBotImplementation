@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { chat } = require('../../rag/pipeline');
 const { tenantOps, sessionOps } = require('../../db/database');
+const config = require('../../config');
 const logger = require('../../utils/logger');
 
 const router = express.Router();
@@ -38,6 +39,7 @@ router.post('/chat', async (req, res) => {
 
   // Get client IP
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || 'unknown';
+  const isAdmin = config.admin.exemptIps.has(clientIp);
 
   // Resolve or create session
   let sessionId = incomingSessionId;
@@ -56,25 +58,29 @@ router.post('/chat', async (req, res) => {
   }
 
   if (!sessionId) {
-    // Check daily chat limit
-    const todayCount = sessionOps.countTodayByIp(chatbotId, clientIp);
-    if (todayCount >= MAX_SESSIONS_PER_DAY) {
-      return res.status(429).json({
-        error: 'daily_limit',
-        message: "You've reached your daily limit of 2 chats. Please try again tomorrow.",
-      });
+    // Check daily chat limit (skipped for admin IPs)
+    if (!isAdmin) {
+      const todayCount = sessionOps.countTodayByIp(chatbotId, clientIp);
+      if (todayCount >= MAX_SESSIONS_PER_DAY) {
+        return res.status(429).json({
+          error: 'daily_limit',
+          message: "You've reached your daily limit of 2 chats. Please try again tomorrow.",
+        });
+      }
     }
     sessionId = uuidv4();
     sessionOps.create({ id: sessionId, tenantId: chatbotId, ip: clientIp });
   }
 
-  // Check per-session message limit
-  const userMsgCount = sessionOps.getUserMessageCount(sessionId);
-  if (userMsgCount >= MAX_MESSAGES_PER_SESSION) {
-    return res.status(429).json({
-      error: 'session_limit',
-      message: "You've reached the 10-message limit for this chat. Start a new chat to continue.",
-    });
+  // Check per-session message limit (skipped for admin IPs)
+  if (!isAdmin) {
+    const userMsgCount = sessionOps.getUserMessageCount(sessionId);
+    if (userMsgCount >= MAX_MESSAGES_PER_SESSION) {
+      return res.status(429).json({
+        error: 'session_limit',
+        message: "You've reached the 10-message limit for this chat. Start a new chat to continue.",
+      });
+    }
   }
 
   // Save user message

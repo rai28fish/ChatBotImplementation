@@ -350,7 +350,7 @@
       #chatbot-send:not(:disabled):hover { opacity: 0.85; }
       #chatbot-powered {
         text-align: center;
-        font-size: 10px;
+        font-size: 12px;
         color: #bbb;
         padding: 4px 0 6px;
       }
@@ -453,7 +453,7 @@
       <div id="chatbot-messages" role="log" aria-live="polite" aria-label="Chat messages"></div>
       <div id="chatbot-starters"></div>
       <div id="chatbot-input-area">
-        <textarea id="chatbot-input" placeholder="Type a message..." rows="1" aria-label="Message input"></textarea>
+        <textarea id="chatbot-input" placeholder="Type a message..." rows="1" aria-label="Message input" spellcheck="false" autocorrect="off" autocomplete="off"></textarea>
         <button id="chatbot-send" aria-label="Send message">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>

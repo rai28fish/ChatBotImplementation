@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbot Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
+
+    #site-frame {
+      display: block;
+      width: 100%;
+      height: 100vh;
+      border: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    #error-banner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #1a1a2e;
+      color: #aac;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: .85rem;
+      padding: 12px 20px;
+      z-index: 100;
+      text-align: center;
+    }
+    #error-banner a { color: #6fb8e5; text-decoration: none; }
+    #error-banner a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div id="error-banner"></div>
+  <iframe id="site-frame" title="Site Preview" allow="fullscreen"></iframe>
+
+  <script>
+    (async () => {
+      const params  = new URLSearchParams(window.location.search);
+      const id      = params.get('id');
+      const frame   = document.getElementById('site-frame');
+      const banner  = document.getElementById('error-banner');
+
+      if (!id) {
+        banner.style.display = 'block';
+        banner.textContent = 'No chatbot ID provided. Add ?id=CHATBOT_ID to the URL.';
+        return;
+      }
+
+      // Update page title
+      document.title = `Preview — ${id.slice(0, 8)}…`;
+
+      try {
+        const res  = await fetch(`http://localhost:3000/chatbot/${id}/status`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          banner.style.display = 'block';
+          banner.innerHTML = `Chatbot not found. <a href="/dashboard">← Back to Dashboard</a>`;
+          return;
+        }
+
+        // Set iframe to the company's website
+        if (data.baseUrl) {
+          frame.src = data.baseUrl;
+          document.title = `Preview — ${data.name || id.slice(0,8)}`;
+        } else {
+          // No base URL — show a plain dark page so the widget still renders
+          frame.style.display = 'none';
+          document.body.style.background = '#0f1117';
+        }
+
+        // Warn if chatbot isn't ready yet
+        if (data.status !== 'ready') {
+          banner.style.display = 'block';
+          banner.innerHTML = `
+            Chatbot status: <strong>${data.status}</strong> — widget may not respond until indexing is complete.
+            <a href="/dashboard">← Dashboard</a>
+          `;
+        }
+
+      } catch {
+        banner.style.display = 'block';
+        banner.innerHTML = `Cannot reach server. Make sure the backend is running. <a href="/dashboard">← Dashboard</a>`;
+        return;
+      }
+
+      // Load the widget
+      const script = document.createElement('script');
+      script.src = 'http://localhost:3000/widget/chatbot-widget.js';
+      script.setAttribute('data-chatbot-id', id);
+      script.async = true;
+      document.body.appendChild(script);
+    })();
+  </script>
+
+</body>
+</html>

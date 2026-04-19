@@ -62,6 +62,12 @@ app.use('/widget', express.static(path.join(__dirname, '../../widget'), {
   },
 }));
 
+app.use('/dashboard', express.static(path.join(__dirname, '../../dashboard'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+  },
+}));
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 app.use('/', chatRoutes);
@@ -93,6 +99,7 @@ app.listen(config.port, () => {
 ║   Running on http://localhost:${config.port}       ║
 ╚══════════════════════════════════════════╝
   `);
+  logger.info(`Dashboard:        http://localhost:${config.port}/dashboard`);
   logger.info(`Widget served at: http://localhost:${config.port}/widget/chatbot-widget.js`);
 });
 

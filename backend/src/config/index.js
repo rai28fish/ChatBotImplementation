@@ -31,6 +31,13 @@ module.exports = {
     allowedOrigins: process.env.WIDGET_ALLOWED_ORIGINS || '*',
   },
 
+  admin: {
+    exemptIps: new Set([
+      '127.0.0.1', '::1', '::ffff:127.0.0.1', // always exempt
+      ...(process.env.ADMIN_IPS || '').split(',').map((s) => s.trim()).filter(Boolean),
+    ]),
+  },
+
   // URL patterns to skip during crawling
   skipPatterns: [
     /\/login/i, /\/logout/i, /\/signin/i, /\/signup/i, /\/register/i,

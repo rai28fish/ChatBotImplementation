@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChatBot Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    }
+    header h1 { font-size: 1.2rem; font-weight: 600; letter-spacing: .5px; }
+    header span { font-size: .8rem; color: #8899aa; }
+
+    /* ── Layout ── */
+    main { max-width: 1100px; margin: 40px auto; padding: 0 24px; }
+
+    .section-title {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #667;
+      margin-bottom: 20px;
+    }
+
+    /* ── Cards grid ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+      overflow: hidden;
+      transition: box-shadow .2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.12), 0 8px 28px rgba(0,0,0,.1); }
+
+    /* ── Card header ── */
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .bot-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: #e8eef8;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      overflow: hidden;
+    }
+    .bot-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .bot-meta { flex: 1; min-width: 0; }
+    .bot-name { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+    .bot-company { font-size: .85rem; color: #667; margin-top: 2px; }
+
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .status-ready     { background: #e6f9f0; color: #1a7f4b; }
+    .status-indexing  { background: #fff8e1; color: #b36800; }
+    .status-crawling  { background: #fff8e1; color: #b36800; }
+    .status-embedding { background: #fff8e1; color: #b36800; }
+    .status-error     { background: #fdecea; color: #c62828; }
+    .status-pending   { background: #f3f4f6; color: #555; }
+
+    /* ── Card body ── */
+    .card-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── Stats ── */
+    .stats-strip {
+      display: flex;
+      gap: 24px;
+      background: #f8f9fb;
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+    .stat { text-align: center; }
+    .stat-value { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+    .stat-label { font-size: .68rem; color: #99a; text-transform: uppercase; letter-spacing: .5px; }
+    .id-chip {
+      font-family: monospace;
+      font-size: .72rem;
+      background: #f0f2f8;
+      color: #556;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; gap: 10px; align-items: center; }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a1a2e;
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: .8rem;
+      font-weight: 600;
+      transition: background .15s;
+    }
+    .link-btn:hover { background: #2d2d50; }
+    .link-btn.secondary {
+      background: transparent;
+      color: #1a1a2e;
+      border: 1.5px solid #dde;
+    }
+    .link-btn.secondary:hover { background: #f3f4f8; }
+
+    /* ── Embed code ── */
+    .embed-label {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      color: #aab;
+      margin-bottom: 6px;
+    }
+    .embed-block {
+      position: relative;
+      background: #1a1a2e;
+      border-radius: 8px;
+      padding: 14px 16px;
+      padding-right: 60px;
+    }
+    .embed-code {
+      font-family: 'SFMono-Regular', 'Consolas', monospace;
+      font-size: .75rem;
+      color: #c8d8e8;
+      line-height: 1.6;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: #2d2d50;
+      color: #aac;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-size: .72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .copy-btn:hover { background: #3d4a6e; color: #fff; }
+    .copy-btn.copied { background: #1a7f4b; color: #fff; }
+
+    /* ── Loading & Error ── */
+    .loading-state, .error-state {
+      text-align: center; padding: 60px 24px; color: #99a; font-size: .95rem;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #e0e3ee;
+      border-top-color: #1a1a2e;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>ChatBot Dashboard</h1>
+  <span id="server-status">● Connecting…</span>
+</header>
+
+<main>
+  <p class="section-title">Active Chatbots</p>
+  <div class="cards" id="cards-container">
+    <div class="loading-state"><div class="spinner"></div>Loading chatbots…</div>
+  </div>
+</main>
+
+<script>
+  const BASE = 'http://localhost:3000';
+
+  function companyFromUrl(baseUrl) {
+    try {
+      const host = new URL(baseUrl).hostname.replace(/^www\./, '');
+      return host.split('.')[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    } catch { return baseUrl; }
+  }
+
+  function embedSnippet(id) {
+    return `<script\n  src="${BASE}/widget/chatbot-widget.js"\n  data-chatbot-id="${id}"\n  async\n><\/script>`;
+  }
+
+  function statusClass(s) {
+    const map = { ready: 'ready', error: 'error', crawling: 'indexing', embedding: 'indexing', indexing: 'indexing', pending: 'pending' };
+    return 'status-' + (map[s] || 'pending');
+  }
+
+  function renderCard(bot) {
+    const id = bot.chatbotId;
+    const company = bot.companyName || companyFromUrl(bot.baseUrl || '');
+    const snippet = embedSnippet(id);
+    const safeSnippet = snippet.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    return `
+      <div class="card" id="card-${id}">
+        <div class="card-header">
+          <div class="bot-avatar">
+            ${bot.profileImage
+              ? `<img src="${bot.profileImage}" alt="${bot.name}" onerror="this.parentElement.textContent='🤖'">`
+              : '🤖'}
+          </div>
+          <div class="bot-meta">
+            <div class="bot-name">${bot.name}</div>
+            <div class="bot-company">${company}</div>
+          </div>
+          <span class="status-badge ${statusClass(bot.status)}">${bot.status}</span>
+        </div>
+
+        <div class="card-body">
+          <div class="stats-strip">
+            <div class="stat">
+              <div class="stat-value">${bot.pagesIndexed ?? '—'}</div>
+              <div class="stat-label">Pages</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${bot.chunksIndexed ?? '—'}</div>
+              <div class="stat-label">Chunks</div>
+            </div>
+            <div class="stat" style="flex:1; text-align:left;">
+              <div class="stat-value" style="font-size:.8rem; font-weight:500; color:#445;">
+                <span class="id-chip">${id.slice(0, 8)}…</span>
+              </div>
+              <div class="stat-label">Chatbot ID</div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <a class="link-btn" href="${BASE}/widget/preview.html?id=${id}" target="_blank">⬡ Local Preview</a>
+            <a class="link-btn secondary" href="/dashboard/chatbot.html?id=${id}">⚙ Configure</a>
+          </div>
+
+          <div>
+            <div class="embed-label">Embed Code</div>
+            <div class="embed-block">
+              <pre class="embed-code">${safeSnippet}</pre>
+              <button class="copy-btn" onclick="copyEmbed(this, '${id}')">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function copyEmbed(btn, id) {
+    navigator.clipboard.writeText(embedSnippet(id)).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  async function load() {
+    const statusEl = document.getElementById('server-status');
+    const container = document.getElementById('cards-container');
+
+    try {
+      const health = await fetch(`${BASE}/health`);
+      if (health.ok) {
+        statusEl.textContent = '● Server Online';
+        statusEl.style.color = '#4caf84';
+      }
+
+      const res = await fetch(`${BASE}/chatbots`);
+      if (!res.ok) throw new Error('Failed to fetch chatbots');
+      const bots = await res.json();
+
+      if (bots.length === 0) {
+        container.innerHTML = '<div class="error-state">No chatbots found.</div>';
+        return;
+      }
+
+      container.innerHTML = bots.map(renderCard).join('');
+    } catch (err) {
+      statusEl.textContent = '● Server Offline';
+      statusEl.style.color = '#e53935';
+      container.innerHTML = `
+        <div class="error-state">
+          Could not reach the server at <strong>${BASE}</strong>.<br>
+          Make sure the backend is running.
+        </div>`;
+    }
+  }
+
+  load();
+  setInterval(load, 15000);
+</script>
+</body>
+</html>
