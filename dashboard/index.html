@@ -211,7 +211,7 @@
 </main>
 
 <script>
-  const BASE = 'http://localhost:3000';
+  const BASE = window.location.origin;
 
   function companyFromUrl(baseUrl) {
     try {
@@ -313,6 +313,7 @@
         return;
       }
 
+      bots.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       container.innerHTML = bots.map(renderCard).join('');
     } catch (err) {
       statusEl.textContent = '● Server Offline';

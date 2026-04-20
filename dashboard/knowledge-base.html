@@ -252,7 +252,7 @@
 </main>
 
 <script>
-  const BASE = 'http://localhost:3000';
+  const BASE = window.location.origin;
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
 
