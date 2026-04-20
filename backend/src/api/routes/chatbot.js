@@ -328,6 +328,15 @@ router.post('/chatbot/:id/ingest-text', async (req, res) => {
   }
 });
 
+// DELETE /chatbot/:id/chunks — clear all vectors for a tenant
+router.delete('/chatbot/:id/chunks', (req, res) => {
+  const tenant = tenantOps.findById(req.params.id);
+  if (!tenant) return res.status(404).json({ error: 'Chatbot not found' });
+  vectorStore.deleteAll(req.params.id);
+  tenantOps.updateStatus(req.params.id, 'ready', { chunksIndexed: 0 });
+  res.json({ message: 'Knowledge base cleared' });
+});
+
 // POST /chatbot/:id/reset — force status to ready (for manually-ingested bots)
 router.post('/chatbot/:id/reset', (req, res) => {
   const tenant = tenantOps.findById(req.params.id);

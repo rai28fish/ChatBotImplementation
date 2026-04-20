@@ -329,6 +329,19 @@
     }
   }
 
+  async function clearKnowledgeBase() {
+    if (!confirm('Are you sure you want to delete all knowledge base chunks? This cannot be undone.')) return;
+    const feedback = document.getElementById('ingest-feedback');
+    try {
+      const res = await fetch(`${BASE}/chatbot/${id}/chunks`, { method: 'DELETE' });
+      const data = await res.json();
+      feedback.textContent = 'Knowledge base cleared.';
+      feedback.style.color = '#c0392b';
+    } catch {
+      feedback.textContent = 'Error clearing knowledge base.';
+    }
+  }
+
   async function ingestText() {
     const btn = document.getElementById('ingest-btn');
     const feedback = document.getElementById('ingest-feedback');
@@ -477,6 +490,7 @@
             <textarea id="ingest-text" rows="8" placeholder="Paste any extra content here — FAQs, bios, program descriptions, contact info, anything the website doesn't cover. It will be chunked and added to the knowledge base alongside the crawled pages."></textarea>
             <div class="save-row">
               <button class="ingest-btn" id="ingest-btn" onclick="ingestText()">Add to Knowledge Base</button>
+              <button class="ingest-btn" style="background:#c0392b;margin-left:10px;" onclick="clearKnowledgeBase()">🗑 Clear Knowledge Base</button>
               <span class="save-feedback" id="ingest-feedback"></span>
             </div>
           </div>
