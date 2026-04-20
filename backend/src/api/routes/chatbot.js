@@ -246,6 +246,9 @@ router.get('/chatbot/:id/config', (req, res) => {
     primaryColor: tenant.config.primaryColor || '#0066cc',
     profileImage: tenant.config.profileImage || '',
     welcomeMessage: tenant.config.welcomeMessage || `Hi! How can I help you?`,
+    teaserMessage: tenant.config.teaserMessage || '',
+    placeholderText: tenant.config.placeholderText || '',
+    starterPrompts: tenant.config.starterPrompts || [],
   });
 });
 
@@ -323,6 +326,14 @@ router.post('/chatbot/:id/ingest-text', async (req, res) => {
     logger.error(`[${tenant.id}] ingest-text failed: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
+});
+
+// POST /chatbot/:id/reset — force status to ready (for manually-ingested bots)
+router.post('/chatbot/:id/reset', (req, res) => {
+  const tenant = tenantOps.findById(req.params.id);
+  if (!tenant) return res.status(404).json({ error: 'Chatbot not found' });
+  tenantOps.updateStatus(req.params.id, 'ready');
+  res.json({ chatbotId: req.params.id, status: 'ready' });
 });
 
 module.exports = router;

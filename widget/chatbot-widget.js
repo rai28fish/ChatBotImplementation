@@ -15,7 +15,7 @@
 
   const API_BASE = new URL(scriptTag.src).origin;
 
-  const STARTER_PROMPTS = [
+  const DEFAULT_STARTER_PROMPTS = [
     'What services do you offer?',
     'What is your contact information?',
   ];
@@ -151,17 +151,17 @@
         position: relative;
       }
       #chatbot-avatar {
-        width: 36px;
-        height: 36px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.25);
+        background: none;
         overflow: hidden;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
       }
-      #chatbot-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      #chatbot-avatar img { width: 100%; height: 100%; object-fit: contain; }
       #chatbot-title { font-weight: 600; font-size: 15px; }
       #chatbot-subtitle { font-size: 11px; opacity: 0.8; margin-top: 1px; }
       #chatbot-header-text { flex: 1; min-width: 0; }
@@ -359,7 +359,7 @@
       .cb-msg.bot ul, .cb-msg.bot ol { margin: 4px 0 6px; padding-left: 18px; }
       .cb-msg.bot li { margin-bottom: 3px; line-height: 1.5; }
       .cb-msg.bot strong { font-weight: 600; }
-      #chatbot-launcher img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; pointer-events: none; }
+      #chatbot-launcher img { width: 56px; height: 56px; border-radius: 50%; object-fit: contain; pointer-events: none; }
       @media (max-width: 480px) {
         #chatbot-window {
           bottom: 0; right: 0; left: 0;
@@ -460,7 +460,7 @@
           </svg>
         </button>
       </div>
-      <div id="chatbot-powered">Powered by RaiBot</div>
+      <div id="chatbot-powered">Powered by RaiForgeX</div>
     `;
 
     document.body.appendChild(launcher);
@@ -521,6 +521,9 @@
   function buildStarters() {
     const container = elements.starters;
     container.innerHTML = '';
+    const STARTER_PROMPTS = (botConfig.starterPrompts && botConfig.starterPrompts.length)
+      ? botConfig.starterPrompts
+      : DEFAULT_STARTER_PROMPTS;
     STARTER_PROMPTS.forEach((prompt) => {
       const btn = document.createElement('button');
       btn.className = 'cb-starter';

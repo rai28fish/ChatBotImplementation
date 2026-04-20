@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m json.tool)",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"const db = require\\('./src/db/database'\\); const t = db.tenantOps.findById\\('57968c87-57b9-48fe-848e-c9d9e8f2dd5d'\\); console.log\\('status:', t.status, 'pages:', t.pages_indexed\\);\")"
+    ]
+  }
+}
