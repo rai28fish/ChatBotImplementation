@@ -39,7 +39,6 @@ router.post('/chat', async (req, res) => {
 
   // Get client IP
   const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || 'unknown';
-  logger.info(`Chat request from IP: ${clientIp}`);
   const isAdmin = config.admin.exemptIps.has(clientIp);
 
   // Resolve or create session
