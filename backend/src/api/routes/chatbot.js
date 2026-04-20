@@ -332,7 +332,7 @@ router.post('/chatbot/:id/ingest-text', async (req, res) => {
 router.delete('/chatbot/:id/chunks', (req, res) => {
   const tenant = tenantOps.findById(req.params.id);
   if (!tenant) return res.status(404).json({ error: 'Chatbot not found' });
-  vectorStore.deleteAll(req.params.id);
+  vectorStore.clear(req.params.id);
   tenantOps.updateStatus(req.params.id, 'ready', { chunksIndexed: 0 });
   res.json({ message: 'Knowledge base cleared' });
 });
