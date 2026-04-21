@@ -186,6 +186,16 @@ const sessionOps = {
       (s) => s.tenant_id === tenantId && s.ip === ip && s.created_at.slice(0, 10) === today,
     ).length;
   },
+
+  countTodayUserMessagesByIp(tenantId, ip) {
+    const today = new Date().toISOString().slice(0, 10);
+    const todaySessions = Object.values(store.sessions).filter(
+      (s) => s.tenant_id === tenantId && s.ip === ip && s.created_at.slice(0, 10) === today,
+    );
+    return todaySessions.reduce((total, session) => {
+      return total + (store.messages[session.id] || []).filter((m) => m.role === 'user').length;
+    }, 0);
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

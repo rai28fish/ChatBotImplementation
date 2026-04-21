@@ -7,8 +7,7 @@ const logger = require('../../utils/logger');
 
 const router = express.Router();
 
-const MAX_MESSAGES_PER_SESSION = 10;
-const MAX_SESSIONS_PER_DAY = 2;
+const MAX_DAILY_MESSAGES = 20;
 
 /**
  * POST /chat
@@ -58,27 +57,17 @@ router.post('/chat', async (req, res) => {
   }
 
   if (!sessionId) {
-    // Check daily chat limit (skipped for admin IPs)
-    if (!isAdmin) {
-      const todayCount = sessionOps.countTodayByIp(chatbotId, clientIp);
-      if (todayCount >= MAX_SESSIONS_PER_DAY) {
-        return res.status(429).json({
-          error: 'daily_limit',
-          message: "You've reached your daily limit of 2 chats. Please try again tomorrow.",
-        });
-      }
-    }
     sessionId = uuidv4();
     sessionOps.create({ id: sessionId, tenantId: chatbotId, ip: clientIp });
   }
 
-  // Check per-session message limit (skipped for admin IPs)
+  // Check daily message limit across all sessions (skipped for admin IPs)
   if (!isAdmin) {
-    const userMsgCount = sessionOps.getUserMessageCount(sessionId);
-    if (userMsgCount >= MAX_MESSAGES_PER_SESSION) {
+    const dailyMsgCount = sessionOps.countTodayUserMessagesByIp(chatbotId, clientIp);
+    if (dailyMsgCount >= MAX_DAILY_MESSAGES) {
       return res.status(429).json({
-        error: 'session_limit',
-        message: "You've reached the 10-message limit for this chat. Start a new chat to continue.",
+        error: 'daily_limit',
+        message: "You've reached your daily limit of 20 messages. Please try again tomorrow.",
       });
     }
   }
