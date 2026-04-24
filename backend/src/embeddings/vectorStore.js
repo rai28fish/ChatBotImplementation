@@ -113,6 +113,28 @@ class VectorStore {
   }
 
   /**
+   * Keyword search — returns chunks whose text contains ALL query terms.
+   * Terms shorter than 3 chars are ignored. Case-insensitive.
+   */
+  keywordSearch(tenantId, query, topK = 5) {
+    const store = this._load(tenantId);
+    if (store.vectors.length === 0) return [];
+
+    const terms = query.toLowerCase().split(/\s+/).filter(t => t.length >= 3);
+    if (terms.length === 0) return [];
+
+    return store.vectors
+      .map((v) => {
+        const lower = v.text.toLowerCase();
+        const matchCount = terms.filter(t => lower.includes(t)).length;
+        return { id: v.id, text: v.text, metadata: v.metadata, score: matchCount / terms.length };
+      })
+      .filter(v => v.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
+  }
+
+  /**
    * Get all unique URLs stored for a tenant.
    */
   getIndexedUrls(tenantId) {

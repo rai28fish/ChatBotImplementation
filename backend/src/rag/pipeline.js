@@ -80,9 +80,16 @@ async function chat({ tenantId, tenantConfig, message, history = [], onChunk, on
     logger.debug(`RAG query for tenant ${tenantId}: "${message.slice(0, 80)}"`);
     const queryEmbedding = await embedQuery(message);
 
-    // 2. Retrieve relevant chunks
-    const relevantChunks = vectorStore.search(tenantId, queryEmbedding, TOP_K);
-    logger.debug(`Retrieved ${relevantChunks.length} chunks (best score: ${relevantChunks[0]?.score?.toFixed(3)})`);
+    // 2. Retrieve relevant chunks (semantic + keyword hybrid)
+    const semanticChunks = vectorStore.search(tenantId, queryEmbedding, TOP_K);
+    const keywordChunks = vectorStore.keywordSearch(tenantId, message, 5);
+
+    // Merge: semantic results first, then add any keyword-only matches not already included
+    const seenIds = new Set(semanticChunks.map(c => c.id));
+    const extraChunks = keywordChunks.filter(c => !seenIds.has(c.id));
+    const relevantChunks = [...semanticChunks, ...extraChunks];
+
+    logger.debug(`Retrieved ${semanticChunks.length} semantic + ${extraChunks.length} keyword-only chunks`);
 
     if (relevantChunks.length === 0) {
       logger.warn(`No vectors found for tenant ${tenantId} — chatbot may not be indexed yet`);
