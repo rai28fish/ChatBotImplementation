@@ -212,7 +212,17 @@
 </main>
 
 <script>
-  const BASE = window.location.origin;
+  let BASE = window.location.origin;
+
+  async function loadPublicUrl() {
+    try {
+      const res = await fetch('/public-url');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) BASE = data.url;
+      }
+    } catch {}
+  }
 
   function companyFromUrl(baseUrl) {
     try {
@@ -328,8 +338,10 @@
     }
   }
 
-  load();
-  setInterval(load, 15000);
+  loadPublicUrl().then(() => {
+    load();
+    setInterval(load, 15000);
+  });
 </script>
 </body>
 </html>
