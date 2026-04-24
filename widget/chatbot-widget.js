@@ -238,7 +238,7 @@
         to   { opacity: 1; transform: translateY(0); }
       }
       .cb-msg.user {
-        background: ${primaryColor};
+        background: ${lightTheme ? '#2c2c2c' : primaryColor};
         color: #fff;
         align-self: flex-end;
         border-bottom-right-radius: 4px;
@@ -330,14 +330,14 @@
         line-height: 1.4;
         box-sizing: border-box;
       }
-      #chatbot-input:focus { border-color: ${primaryColor}; }
+      #chatbot-input:focus { border-color: ${lightTheme ? '#555' : primaryColor}; }
       #chatbot-input::placeholder { color: #aaa; }
       #chatbot-send {
         width: 38px;
         height: 38px;
         border-radius: 50%;
         border: none;
-        background: ${primaryColor};
+        background: ${lightTheme ? '#2c2c2c' : primaryColor};
         color: #fff;
         cursor: pointer;
         display: flex;
