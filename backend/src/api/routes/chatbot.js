@@ -1,6 +1,8 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
 const { crawl } = require('../../crawler/crawler');
 const { chunkPages, chunkText } = require('../../embeddings/chunker');
 const { embedTexts } = require('../../embeddings/embedder');
@@ -9,6 +11,7 @@ const { tenantOps, pageOps } = require('../../db/database');
 const logger = require('../../utils/logger');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 function contentHash(text) {
   return crypto.createHash('sha256').update(text).digest('hex').slice(0, 16);
@@ -336,6 +339,52 @@ router.delete('/chatbot/:id/chunks', (req, res) => {
   vectorStore.clear(req.params.id);
   tenantOps.updateStatus(req.params.id, 'ready', { chunksIndexed: 0 });
   res.json({ message: 'Knowledge base cleared' });
+});
+
+// POST /chatbot/:id/ingest-pdf
+router.post('/chatbot/:id/ingest-pdf', upload.single('file'), async (req, res) => {
+  const tenant = tenantOps.findById(req.params.id);
+  if (!tenant) return res.status(404).json({ error: 'Chatbot not found' });
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  if (req.file.mimetype !== 'application/pdf') {
+    return res.status(400).json({ error: 'File must be a PDF' });
+  }
+
+  const title = req.body.title || req.file.originalname.replace(/\.pdf$/i, '');
+  const source = `pdf://${req.params.id}/${Date.now()}`;
+
+  try {
+    const parsed = await pdfParse(req.file.buffer);
+    const text = parsed.text.trim();
+
+    if (!text || text.length < 10) {
+      return res.status(400).json({ error: 'Could not extract text from PDF' });
+    }
+
+    const chunks = chunkText(text, source, title);
+    if (chunks.length === 0) {
+      return res.status(400).json({ error: 'PDF text was too short to produce any chunks' });
+    }
+
+    const embeddings = await embedTexts(chunks.map((c) => c.text));
+    const vectors = chunks.map((chunk, i) => ({
+      id: uuidv4(),
+      text: chunk.text,
+      embedding: embeddings[i],
+      metadata: { ...chunk.metadata, source: 'pdf' },
+    }));
+
+    vectorStore.upsert(tenant.id, vectors);
+
+    const total = vectorStore.count(tenant.id);
+    tenantOps.updateStatus(tenant.id, tenant.status, { chunksIndexed: total });
+
+    logger.info(`[${tenant.id}] Ingested ${chunks.length} chunks from PDF "${title}"`);
+    res.json({ chunksAdded: chunks.length, totalChunks: total, title });
+  } catch (err) {
+    logger.error(`[${tenant.id}] ingest-pdf failed: ${err.message}`);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /chatbot/:id/reset — force status to ready (for manually-ingested bots)

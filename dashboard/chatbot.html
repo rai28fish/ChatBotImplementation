@@ -389,6 +389,52 @@
     }
   }
 
+  async function ingestPdf() {
+    const btn = document.getElementById('pdf-btn');
+    const feedback = document.getElementById('pdf-feedback');
+    const fileInput = document.getElementById('pdf-file');
+    const title = document.getElementById('pdf-title').value.trim();
+
+    if (!fileInput.files || !fileInput.files[0]) {
+      feedback.textContent = 'Please select a PDF file first.';
+      feedback.classList.add('error');
+      feedback.style.display = 'inline';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    if (title) formData.append('title', title);
+
+    btn.disabled = true;
+    btn.textContent = 'Uploading…';
+    feedback.style.display = 'none';
+    feedback.classList.remove('error');
+
+    try {
+      const res = await fetch(`${BASE}/chatbot/${id}/ingest-pdf`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+      btn.textContent = 'Uploaded!';
+      feedback.textContent = `${data.chunksAdded} chunk${data.chunksAdded !== 1 ? 's' : ''} added from "${data.title}" — ${data.totalChunks} total.`;
+      feedback.style.display = 'inline';
+      fileInput.value = '';
+      document.getElementById('pdf-title').value = '';
+      setTimeout(() => {
+        btn.textContent = 'Upload PDF';
+        btn.disabled = false;
+        feedback.style.display = 'none';
+      }, 4000);
+    } catch (err) {
+      btn.textContent = 'Upload PDF';
+      btn.disabled = false;
+      feedback.textContent = err.message;
+      feedback.classList.add('error');
+      feedback.style.display = 'inline';
+    }
+  }
+
   function copyEmbed() {
     const btn = document.getElementById('copy-btn');
     navigator.clipboard.writeText(embedSnippet(id)).then(() => {
@@ -480,7 +526,7 @@
         <div class="section-card">
           <div class="section-head">
             <span class="section-title">Additional Content</span>
-            <span class="section-hint">Supplement the crawled site with extra text</span>
+            <span class="section-hint">Supplement the crawled site with extra text or PDFs</span>
           </div>
           <div class="section-body">
             <div class="input-row">
@@ -492,6 +538,18 @@
               <button class="ingest-btn" id="ingest-btn" onclick="ingestText()">Add to Knowledge Base</button>
               <button class="ingest-btn" style="background:#c0392b;margin-left:10px;" onclick="clearKnowledgeBase()">🗑 Clear Knowledge Base</button>
               <span class="save-feedback" id="ingest-feedback"></span>
+            </div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #eee;">
+              <div style="font-size:.8rem;font-weight:600;color:#556;margin-bottom:8px;">Upload PDF</div>
+              <div class="input-row" style="margin-bottom:8px;">
+                <span class="title-label">Label:</span>
+                <input class="title-input" id="pdf-title" type="text" placeholder="e.g. Menu, Brochure, Price List…" />
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                <input type="file" id="pdf-file" accept=".pdf" style="font-size:.82rem;color:#445;" />
+                <button class="ingest-btn" id="pdf-btn" onclick="ingestPdf()">Upload PDF</button>
+                <span class="save-feedback" id="pdf-feedback"></span>
+              </div>
             </div>
           </div>
         </div>
