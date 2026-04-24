@@ -55,8 +55,8 @@
         position: fixed;
         bottom: 24px;
         right: 24px;
-        width: 56px;
-        height: 56px;
+        width: 68px;
+        height: 68px;
         border-radius: 50%;
         background: ${profileImage ? '#fff' : primaryColor};
         border: none;
@@ -360,7 +360,7 @@
       .cb-msg.bot ul, .cb-msg.bot ol { margin: 4px 0 6px; padding-left: 18px; }
       .cb-msg.bot li { margin-bottom: 3px; line-height: 1.5; }
       .cb-msg.bot strong { font-weight: 600; }
-      #chatbot-launcher img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; pointer-events: none; }
+      #chatbot-launcher img { width: 100%; height: 100%; border-radius: 50%; object-fit: contain; pointer-events: none; }
       @media (max-width: 480px) {
         #chatbot-window {
           bottom: 0; right: 0; left: 0;
