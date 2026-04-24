@@ -250,6 +250,7 @@ router.get('/chatbot/:id/config', (req, res) => {
     name: tenant.config.name || tenant.name,
     primaryColor: tenant.config.primaryColor || '#0066cc',
     profileImage: tenant.config.profileImage || '',
+    profileImageScale: tenant.config.profileImageScale || 1,
     welcomeMessage: tenant.config.welcomeMessage || `Hi! How can I help you?`,
     welcomeMessages: tenant.config.welcomeMessages || [],
     teaserMessage: tenant.config.teaserMessage || '',
