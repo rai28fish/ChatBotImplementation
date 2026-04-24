@@ -178,8 +178,7 @@
 
         document.title = `Preview — ${data.name || id.slice(0,8)}`;
 
-        // Skip iframe if no pages were crawled or no baseUrl
-        if (!data.baseUrl || data.pagesIndexed === 0) {
+        if (!data.baseUrl) {
           showMock();
         } else {
           frame.src = data.baseUrl;
