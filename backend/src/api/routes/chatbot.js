@@ -253,6 +253,7 @@ router.get('/chatbot/:id/config', (req, res) => {
     teaserMessage: tenant.config.teaserMessage || '',
     placeholderText: tenant.config.placeholderText || '',
     starterPrompts: tenant.config.starterPrompts || [],
+    lightTheme: tenant.config.lightTheme || false,
   });
 });
 

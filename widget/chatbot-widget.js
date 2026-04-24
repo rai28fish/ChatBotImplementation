@@ -141,14 +141,15 @@
         pointer-events: all;
       }
       #chatbot-header {
-        background: ${primaryColor};
-        color: #fff;
+        background: ${lightTheme ? '#f2f2f2' : primaryColor};
+        color: ${lightTheme ? '#1a1a1a' : '#fff'};
         padding: 14px 16px;
         display: flex;
         align-items: center;
         gap: 10px;
         flex-shrink: 0;
         position: relative;
+        border-bottom: ${lightTheme ? '1px solid #e0e0e0' : 'none'};
       }
       #chatbot-avatar {
         width: 42px;
@@ -168,7 +169,7 @@
       #chatbot-menu-btn, #chatbot-close {
         background: none;
         border: none;
-        color: #fff;
+        color: ${lightTheme ? '#555' : '#fff'};
         cursor: pointer;
         padding: 6px;
         border-radius: 50%;
@@ -181,7 +182,7 @@
         align-self: flex-start;
         margin-top: -2px;
       }
-      #chatbot-menu-btn:hover, #chatbot-close:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+      #chatbot-menu-btn:hover, #chatbot-close:hover { opacity: 1; background: ${lightTheme ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.15)'}; }
       #chatbot-menu-dropdown {
         position: absolute;
         top: 54px;
@@ -378,7 +379,7 @@
   // ─── DOM Builder ───────────────────────────────────────────────────────────
 
   function buildWidget() {
-    const { name, primaryColor, profileImage, welcomeMessage } = botConfig;
+    const { name, primaryColor, profileImage, welcomeMessage, lightTheme } = botConfig;
 
     // ── Teaser bubble ──
     const teaser = document.createElement('div');

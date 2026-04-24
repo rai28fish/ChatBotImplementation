@@ -5,7 +5,7 @@ const router = express.Router();
 
 const ALLOWED_CONFIG_KEYS = [
   'name', 'primaryColor', 'profileImage', 'welcomeMessage', 'welcomeMessages', 'teaserMessage',
-  'companyName', 'companySummary', 'systemInstructions', 'placeholderText', 'position', 'starterPrompts',
+  'companyName', 'companySummary', 'systemInstructions', 'placeholderText', 'position', 'starterPrompts', 'lightTheme',
 ];
 
 /**
