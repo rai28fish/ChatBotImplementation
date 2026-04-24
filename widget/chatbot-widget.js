@@ -49,7 +49,7 @@
 
   // ─── Styles ────────────────────────────────────────────────────────────────
 
-  function injectStyles(primaryColor) {
+  function injectStyles(primaryColor, profileImage) {
     const css = `
       #chatbot-launcher {
         position: fixed;
@@ -58,7 +58,7 @@
         width: 56px;
         height: 56px;
         border-radius: 50%;
-        background: ${primaryColor};
+        background: ${profileImage ? '#fff' : primaryColor};
         border: none;
         cursor: pointer;
         box-shadow: 0 4px 16px rgba(0,0,0,0.25);
@@ -360,7 +360,7 @@
       .cb-msg.bot ul, .cb-msg.bot ol { margin: 4px 0 6px; padding-left: 18px; }
       .cb-msg.bot li { margin-bottom: 3px; line-height: 1.5; }
       .cb-msg.bot strong { font-weight: 600; }
-      #chatbot-launcher img { width: 56px; height: 56px; border-radius: 50%; object-fit: contain; pointer-events: none; }
+      #chatbot-launcher img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; pointer-events: none; }
       @media (max-width: 480px) {
         #chatbot-window {
           bottom: 0; right: 0; left: 0;
@@ -792,7 +792,7 @@
   // ─── Init ──────────────────────────────────────────────────────────────────
 
   function initWidget() {
-    injectStyles(botConfig.primaryColor || '#0066cc');
+    injectStyles(botConfig.primaryColor || '#0066cc', botConfig.profileImage || '');
     buildWidget();
   }
 
