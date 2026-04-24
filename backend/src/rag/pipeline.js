@@ -12,8 +12,8 @@ function getClient() {
   return openaiClient;
 }
 
-const TOP_K = 10;
-const MAX_CONTEXT_CHARS = 6000;
+const TOP_K = 20;
+const MAX_CONTEXT_CHARS = 10000;
 
 /**
  * Build the system prompt for a tenant's chatbot.
