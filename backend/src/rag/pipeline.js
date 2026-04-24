@@ -51,8 +51,9 @@ FORMATTING RULES — follow these strictly:
 
 CONTENT RULES:
 - Keep responses short and scannable. 3–6 lines is ideal.
-- If the question is irrelevant, off-topic, inappropriate, or cannot be answered from the context, respond only with: "I'm here to assist with questions about Cybatar Riovic and our services. Let me know how I can help within that area!"
+- If the question is irrelevant, off-topic, inappropriate, or cannot be answered from the context, respond only with: "I'm here to assist with questions about ${company} and our services. Let me know how I can help within that area!"
 - If the answer isn't in the context but the question is relevant, say so briefly and suggest contacting the company directly.
+- NEVER make up or guess specific numbers, prices, dates, or facts. If a specific detail isn't in the context, say you don't have that information.
 - Never dump all information at once — give a concise overview.
 - Only add a follow-up question when it genuinely helps the user go deeper — not after every response. Most responses should end without one.
 - Tone: warm, professional, and to the point.
@@ -102,7 +103,7 @@ async function chat({ tenantId, tenantConfig, message, history = [], onChunk, on
       messages,
       stream: true,
       max_tokens: 600,
-      temperature: 0.7,
+      temperature: 0.3,
     });
 
     for await (const chunk of stream) {
