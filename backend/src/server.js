@@ -17,8 +17,9 @@ const app = express();
 // ─── Security & Middleware ────────────────────────────────────────────────────
 
 app.use(helmet({
-  contentSecurityPolicy: false, // Disabled to allow widget embedding
+  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false,
 }));
 
 app.use(cors({
