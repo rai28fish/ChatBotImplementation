@@ -511,8 +511,11 @@
       if (menuOpen) closeMenu();
     });
 
-    // Welcome message
-    appendMessage('bot', welcomeMessage);
+    // Welcome message(s)
+    const welcomes = (botConfig.welcomeMessages && botConfig.welcomeMessages.length)
+      ? botConfig.welcomeMessages
+      : [welcomeMessage];
+    welcomes.forEach(msg => appendMessage('bot', msg));
 
     // Starter prompts
     buildStarters();
@@ -720,7 +723,10 @@
     elements.messages.innerHTML = '';
     elements.input.placeholder = botConfig.placeholderText || 'Type a message...';
     setInputEnabled(true);
-    appendMessage('bot', botConfig.welcomeMessage || 'Hi! How can I help you?');
+    const welcomes = (botConfig.welcomeMessages && botConfig.welcomeMessages.length)
+      ? botConfig.welcomeMessages
+      : [botConfig.welcomeMessage || 'Hi! How can I help you?'];
+    welcomes.forEach(msg => appendMessage('bot', msg));
     buildStarters();
     elements.messages.parentNode.insertBefore(elements.starters, elements.messages.nextSibling);
   }

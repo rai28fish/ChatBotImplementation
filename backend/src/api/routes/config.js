@@ -4,7 +4,7 @@ const { tenantOps } = require('../../db/database');
 const router = express.Router();
 
 const ALLOWED_CONFIG_KEYS = [
-  'name', 'primaryColor', 'profileImage', 'welcomeMessage', 'teaserMessage',
+  'name', 'primaryColor', 'profileImage', 'welcomeMessage', 'welcomeMessages', 'teaserMessage',
   'companyName', 'companySummary', 'systemInstructions', 'placeholderText', 'position', 'starterPrompts',
 ];
 
