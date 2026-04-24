@@ -268,8 +268,8 @@
       }
       .cb-starter {
         background: #fff;
-        border: 1.5px solid ${primaryColor};
-        color: ${primaryColor};
+        border: 1.5px solid ${lightTheme ? '#555' : primaryColor};
+        color: ${lightTheme ? '#333' : primaryColor};
         border-radius: 18px;
         padding: 8px 14px;
         font-size: 13px;
@@ -279,7 +279,7 @@
         text-align: right;
       }
       .cb-starter:hover {
-        background: ${primaryColor};
+        background: ${lightTheme ? '#333' : primaryColor};
         color: #fff;
       }
 
