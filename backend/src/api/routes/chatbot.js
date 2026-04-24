@@ -225,6 +225,8 @@ router.get('/chatbot/:id/status', (req, res) => {
     companySummary: tenant.config.companySummary || '',
     systemInstructions: tenant.config.systemInstructions || '',
     profileImage: tenant.config.profileImage || '',
+    welcomeMessage: tenant.config.welcomeMessage || '',
+    welcomeMessages: tenant.config.welcomeMessages || [],
     baseUrl: tenant.base_url,
     status: tenant.status,
     pagesIndexed: tenant.pages_indexed,
