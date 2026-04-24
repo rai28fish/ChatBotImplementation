@@ -93,6 +93,7 @@
     .status-embedding { background: #fff8e1; color: #b36800; }
     .status-error     { background: #fdecea; color: #c62828; }
     .status-pending   { background: #f3f4f6; color: #555; }
+    .status-deployed  { background: #fff0f5; color: #c2185b; }
 
     /* ── Card body ── */
     .card-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
@@ -248,6 +249,7 @@
             <div class="bot-company">${company}</div>
           </div>
           <span class="status-badge ${statusClass(bot.status)}">${bot.status}</span>
+          ${bot.deployed ? '<span class="status-badge status-deployed">🎉 Deployed</span>' : ''}
         </div>
 
         <div class="card-body">

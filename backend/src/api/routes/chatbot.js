@@ -271,6 +271,7 @@ router.get('/chatbots', (req, res) => {
     pagesIndexed: t.pages_indexed,
     chunksIndexed: t.chunks_indexed,
     profileImage: t.config.profileImage || '',
+    deployed: t.config.deployed || false,
     createdAt: t.created_at,
   })));
 });
