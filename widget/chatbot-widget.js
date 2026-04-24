@@ -49,7 +49,7 @@
 
   // ─── Styles ────────────────────────────────────────────────────────────────
 
-  function injectStyles(primaryColor, profileImage) {
+  function injectStyles(primaryColor, profileImage, lightTheme) {
     const css = `
       #chatbot-launcher {
         position: fixed;
@@ -792,7 +792,7 @@
   // ─── Init ──────────────────────────────────────────────────────────────────
 
   function initWidget() {
-    injectStyles(botConfig.primaryColor || '#0066cc', botConfig.profileImage || '');
+    injectStyles(botConfig.primaryColor || '#0066cc', botConfig.profileImage || '', botConfig.lightTheme || false);
     buildWidget();
   }
 
