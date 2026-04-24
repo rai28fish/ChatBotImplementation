@@ -558,9 +558,9 @@
     elements.win.classList.toggle('open', isOpen);
     const profileImage = botConfig && botConfig.profileImage;
     const botName = botConfig && botConfig.name || '';
-    elements.launcher.style.background = isOpen ? '#555e6e' : (profileImage ? '#fff' : (botConfig.primaryColor || '#0066cc'));
+    elements.launcher.style.background = isOpen ? '#fff' : (profileImage ? '#fff' : (botConfig.primaryColor || '#0066cc'));
     elements.launcher.innerHTML = isOpen
-      ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
+      ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`
       : profileImage
         ? `<img src="${profileImage}" alt="${botName}" />`
         : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
