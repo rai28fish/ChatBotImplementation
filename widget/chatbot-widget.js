@@ -238,7 +238,7 @@
         to   { opacity: 1; transform: translateY(0); }
       }
       .cb-msg.user {
-        background: ${lightTheme ? '#2c2c2c' : primaryColor};
+        background: ${lightTheme ? '#555e6e' : primaryColor};
         color: #fff;
         align-self: flex-end;
         border-bottom-right-radius: 4px;
@@ -337,7 +337,7 @@
         height: 38px;
         border-radius: 50%;
         border: none;
-        background: ${lightTheme ? '#2c2c2c' : primaryColor};
+        background: ${lightTheme ? '#555e6e' : primaryColor};
         color: #fff;
         cursor: pointer;
         display: flex;

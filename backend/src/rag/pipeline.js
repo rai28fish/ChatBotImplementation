@@ -13,7 +13,7 @@ function getClient() {
 }
 
 const TOP_K = 20;
-const MAX_CONTEXT_CHARS = 10000;
+const MAX_CONTEXT_CHARS = 16000;
 
 /**
  * Build the system prompt for a tenant's chatbot.
@@ -82,7 +82,7 @@ async function chat({ tenantId, tenantConfig, message, history = [], onChunk, on
 
     // 2. Retrieve relevant chunks (semantic + keyword hybrid)
     const semanticChunks = vectorStore.search(tenantId, queryEmbedding, TOP_K);
-    const keywordChunks = vectorStore.keywordSearch(tenantId, message, 5);
+    const keywordChunks = vectorStore.keywordSearch(tenantId, message, 10);
 
     // Merge: semantic results first, then add any keyword-only matches not already included
     const seenIds = new Set(semanticChunks.map(c => c.id));
