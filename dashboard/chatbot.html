@@ -305,7 +305,14 @@
       const res = await fetch(`${BASE}/update-config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatbotId: id, config: { companySummary: summary, systemInstructions: instructions } }),
+        body: JSON.stringify({ chatbotId: id, config: {
+          companySummary: summary,
+          systemInstructions: instructions,
+          welcomeMessages: [
+            document.getElementById('welcome-msg-1').value.trim(),
+            document.getElementById('welcome-msg-2').value.trim(),
+          ].filter(m => m),
+        } }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Save failed');
@@ -504,6 +511,24 @@
           </div>
           <div class="section-body">
             <textarea id="summary" rows="2" placeholder="One-line summary of what the company does, its services, and contact info…">${escapeHtml(bot.companySummary || '')}</textarea>
+          </div>
+        </div>
+
+        <!-- Welcome Messages -->
+        <div class="section-card">
+          <div class="section-head">
+            <span class="section-title">Welcome Messages</span>
+            <span class="section-hint">Shown when the chat window first opens (up to 2 bubbles)</span>
+          </div>
+          <div class="section-body">
+            <div class="input-row" style="margin-bottom:8px;">
+              <span class="title-label">Line 1:</span>
+              <input class="title-input" id="welcome-msg-1" type="text" style="flex:1;" value="${escapeHtml((bot.welcomeMessages && bot.welcomeMessages[0]) || bot.welcomeMessage || '')}" placeholder="e.g. Hi! How can I help you?" />
+            </div>
+            <div class="input-row">
+              <span class="title-label">Line 2:</span>
+              <input class="title-input" id="welcome-msg-2" type="text" style="flex:1;" value="${escapeHtml((bot.welcomeMessages && bot.welcomeMessages[1]) || '')}" placeholder="Optional second bubble…" />
+            </div>
           </div>
         </div>
 
