@@ -282,8 +282,18 @@
     return 'status-' + (map[s] || 'pending');
   }
 
+  let PUBLIC_URL = BASE;
+
+  async function loadPublicUrl() {
+    try {
+      const res = await fetch(`${BASE}/public-url`);
+      const data = await res.json();
+      if (data.url) PUBLIC_URL = data.url.replace(/\/$/, '');
+    } catch {}
+  }
+
   function embedSnippet(id) {
-    return `<script\n  src="${BASE}/widget/chatbot-widget.js"\n  data-chatbot-id="${id}"\n  async\n><\/script>`;
+    return `<script\n  src="${PUBLIC_URL}/widget/chatbot-widget.js"\n  data-chatbot-id="${id}"\n  async\n><\/script>`;
   }
 
   function escapeHtml(s) {
@@ -599,7 +609,7 @@
     }
   }
 
-  load();
+  loadPublicUrl().then(() => load());
 </script>
 </body>
 </html>

@@ -31,6 +31,8 @@ module.exports = {
     allowedOrigins: process.env.WIDGET_ALLOWED_ORIGINS || '*',
   },
 
+  publicUrl: process.env.PUBLIC_URL || '',
+
   admin: {
     exemptIps: new Set([
       '127.0.0.1', '::1', '::ffff:127.0.0.1', // always exempt

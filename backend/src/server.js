@@ -79,6 +79,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Public URL (used by dashboard to generate correct embed snippets)
+app.get('/public-url', (req, res) => {
+  const url = config.publicUrl || `${req.protocol}://${req.get('host')}`;
+  res.json({ url });
+});
+
 // ─── Error Handler ────────────────────────────────────────────────────────────
 
 app.use((err, req, res, _next) => {
