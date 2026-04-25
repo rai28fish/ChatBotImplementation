@@ -68,6 +68,7 @@
         z-index: 999998;
         transition: transform 0.2s, box-shadow 0.2s;
         outline: none;
+        overflow: hidden;
       }
       #chatbot-launcher:hover {
         transform: scale(1.08);
