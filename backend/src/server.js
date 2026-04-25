@@ -13,6 +13,7 @@ const chatbotRoutes = require('./api/routes/chatbot');
 const configRoutes = require('./api/routes/config');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // ─── Security & Middleware ────────────────────────────────────────────────────
 
